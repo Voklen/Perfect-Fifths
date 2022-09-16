@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(PartialEq, Clone)]
 struct Fraction {
 	top: u128,
 	bottom: u128,
@@ -10,8 +10,8 @@ impl Fraction {
 		let new_bottom = self.bottom.pow(power);
 		let gcd = gcd(new_top, new_bottom);
 		Fraction {
-			top: new_top/gcd,
-			bottom: new_bottom/gcd,
+			top: new_top / gcd,
+			bottom: new_bottom / gcd,
 		}
 	}
 
@@ -27,20 +27,6 @@ impl Fraction {
 	fn minus(&mut self, number: u128) {
 		self.top -= self.bottom * number;
 	}
-
-	fn compare(&self, other: &Fraction) -> Compare {
-		if self.top == other.top && self.bottom == other.bottom {
-			return Compare::EQUAL;
-		}
-		let first = (self.top as f64) / (self.bottom as f64);
-		let second = (other.top as f64) / (other.bottom as f64);
-
-		if second > first {
-			return Compare::GREATER;
-		} else {
-			return Compare::LESS;
-		}
-	}
 }
 
 impl std::fmt::Display for Fraction {
@@ -51,24 +37,33 @@ impl std::fmt::Display for Fraction {
 	}
 }
 
-#[derive(PartialEq, Eq)]
-enum Compare {
-	GREATER,
-	LESS,
-	EQUAL,
+impl PartialOrd for Fraction {
+	fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+		if self.top == other.top && self.bottom == other.bottom {
+			return Some(std::cmp::Ordering::Equal);
+		}
+		let first = (self.top as f64) / (self.bottom as f64);
+		let second = (other.top as f64) / (other.bottom as f64);
+
+		if second > first {
+			return Some(std::cmp::Ordering::Greater);
+		} else {
+			return Some(std::cmp::Ordering::Less);
+		}
+	}
 }
 
 /// Greatest Common Denominator
 fn gcd(n1: u128, n2: u128) -> u128 {
-	let (mut x, mut y) = if n1 > n2 {(n1,n2)} else {(n2,n1)};
+	let (mut x, mut y) = if n1 > n2 { (n1, n2) } else { (n2, n1) };
 
-    let mut remainder = x % y;
+	let mut remainder = x % y;
 
-    while remainder != 0 {
-        x = y;
-        y = remainder;
-        remainder = x % y;
-    }
+	while remainder != 0 {
+		x = y;
+		y = remainder;
+		remainder = x % y;
+	}
 	y
 }
 
@@ -77,10 +72,12 @@ fn contains(nums: &Vec<Fraction>, num: Fraction) -> Option<usize> {
 	let mut lowest = 0;
 	while highest > lowest {
 		let pos = (highest + lowest) / 2;
-		match num.compare(&nums[pos]) {
-			Compare::LESS => lowest = pos + 1,
-			Compare::GREATER => highest = pos - 1,
-			Compare::EQUAL => return Some(pos)
+		if num < nums[pos] {
+			lowest = pos + 1
+		} else if num > nums[pos] {
+			highest = pos - 1
+		} else {
+			return Some(pos);
 		}
 	}
 	None
@@ -95,7 +92,7 @@ fn main() {
 		let mut new = BASE.powi(power);
 
 		let two = Fraction { top: 2, bottom: 1 };
-		while new.compare(&two) == Compare::GREATER {
+		while new >= two {
 			new.divide(2);
 		}
 		println!("Power {power}: {new}");
