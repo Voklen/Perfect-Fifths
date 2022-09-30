@@ -38,12 +38,10 @@ impl Fraction {
 	}
 
 	pub fn divide(&mut self, number: u128) {
-		let top_div = self.top / number;
-		if self.top == (top_div * number) {
-			self.top = top_div
-		} else {
-			self.bottom *= number
-		}
+		let gcd = gcd(self.top, number);
+		self.top /= gcd;
+		let leftover = number / gcd;
+		self.bottom *= leftover;
 	}
 
 	pub fn minus(&mut self, number: u128) {
