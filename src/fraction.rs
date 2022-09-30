@@ -6,10 +6,6 @@ pub struct Fraction {
 
 impl Fraction {
 	pub const fn new(top: u128, bottom: u128) -> Self {
-		Self::simple_fraction(top, bottom)
-	}
-
-	const fn simple_fraction(top: u128, bottom: u128) -> Self {
 		let gcd = gcd(top, bottom);
 		Self {
 			top: top / gcd,
@@ -34,7 +30,7 @@ impl Fraction {
 	pub fn powi(self, power: u32) -> Self {
 		let new_top = self.top.pow(power);
 		let new_bottom = self.bottom.pow(power);
-		Self::simple_fraction(new_top, new_bottom)
+		Self::new(new_top, new_bottom)
 	}
 
 	pub fn divide(&mut self, number: u128) {
