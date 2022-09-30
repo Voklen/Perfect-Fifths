@@ -32,18 +32,6 @@ impl Fraction {
 		let new_bottom = self.bottom.pow(power);
 		Self::new(new_top, new_bottom)
 	}
-
-	pub fn divide(&mut self, number: u128) {
-		let gcd = gcd(self.top, number);
-		self.top /= gcd;
-		let leftover = number / gcd;
-		self.bottom *= leftover;
-	}
-
-	pub fn minus(&mut self, number: u128) {
-		self.top -= self.bottom * number;
-		self.simplify_mut();
-	}
 }
 
 impl std::fmt::Display for Fraction {
@@ -51,6 +39,74 @@ impl std::fmt::Display for Fraction {
 		let top = self.top;
 		let bottom = self.bottom;
 		write!(f, "{top}/{bottom}")
+	}
+}
+
+impl std::ops::Add for Fraction {
+	type Output = Self;
+
+	fn add(self, rhs: Self) -> Self::Output {
+		let (frac1, frac2) = equalise_denominators(self, rhs);
+		let top = frac1.top + frac2.top;
+		Self::new(top, frac1.bottom)
+	}
+}
+
+impl std::ops::Sub for Fraction {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+		let (frac1, frac2) = equalise_denominators(self, rhs);
+		let top = frac1.top - frac2.top;
+		Self::new(top, frac1.bottom)
+    }
+}
+
+impl std::ops::Mul for Fraction {
+	type Output = Self;
+
+	fn mul(self, rhs: Self) -> Self::Output {
+		let top = self.top * rhs.top;
+		let bottom = self.bottom * rhs.bottom;
+		Self::new(top, bottom)
+	}
+}
+
+impl std::ops::Div for Fraction {
+	type Output = Self;
+
+	fn div(self, rhs: Self) -> Self::Output {
+		let top = self.top * rhs.bottom;
+		let bottom = self.bottom * rhs.top;
+		Self::new(top, bottom)
+	}
+}
+
+impl std::ops::DivAssign for Fraction {
+    fn div_assign(&mut self, rhs: Self) {
+		self.top = self.top * rhs.bottom;
+		self.bottom = self.bottom * rhs.top;
+		self.simplify_mut();
+    }
+}
+
+impl<T> std::ops::DivAssign<T> for Fraction where u128: std::ops::MulAssign<T> {
+    fn div_assign(&mut self, rhs: T) {
+		self.bottom *= rhs;
+		self.simplify_mut();
+    }
+}
+
+impl std::ops::Mul<u128> for Fraction {
+	type Output = Self;
+
+	fn mul(self, rhs: u128) -> Self::Output {
+		let gcd = gcd(self.top, rhs);
+		let leftover = rhs / gcd;
+
+		let top = self.top * leftover;
+		let bottom = self.bottom / gcd;
+		Self { top, bottom }
 	}
 }
 
@@ -82,4 +138,22 @@ const fn gcd(n1: u128, n2: u128) -> u128 {
 		remainder = x % y;
 	}
 	y
+}
+
+/// Lowest Common Multiple
+const fn lcm(n1: u128, n2: u128) -> u128 {
+	(n1 * n2) / gcd(n1, n2)
+}
+
+fn equalise_denominators(frac1: Fraction, frac2: Fraction) -> (Fraction, Fraction) {
+	let lcm = lcm(frac1.bottom, frac2.bottom);
+	let out1 = Fraction {
+		top: frac1.top * lcm,
+		bottom: frac1.bottom * lcm,
+	};
+	let out2 = Fraction {
+		top: frac2.top * lcm,
+		bottom: frac2.bottom * lcm,
+	};
+	(out1, out2)
 }

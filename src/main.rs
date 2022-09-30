@@ -27,7 +27,7 @@ fn main() {
 
 		let two = Fraction::new(2, 1);
 		while new >= two {
-			new.divide(2);
+			new /= 2;
 		}
 		println!("Power {power}: {new}");
 		match contains(&numbers, new.clone()) {
