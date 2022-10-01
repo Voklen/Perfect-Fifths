@@ -49,19 +49,29 @@ impl std::ops::Add for Fraction {
 		let lcm = lcm(self.bottom, rhs.bottom);
 		let first_top = self.top * (lcm / self.bottom);
 		let second_top = rhs.top * (lcm / rhs.bottom);
-		let top= first_top + second_top;
+		let top = first_top + second_top;
 		Self::new(top, lcm)
 	}
 }
 
-impl std::ops::Sub for Fraction {
-    type Output = Self;
+impl std::ops::AddAssign for Fraction {
+	fn add_assign(&mut self, rhs: Self) {
+		let lcm = lcm(self.bottom, rhs.bottom);
+		self.top *= lcm / self.bottom;
+		self.top += rhs.top * (lcm / rhs.bottom);
+		self.bottom = lcm;
+		self.simplify_mut();
+	}
+}
 
-    fn sub(self, rhs: Self) -> Self::Output {
+impl std::ops::Sub for Fraction {
+	type Output = Self;
+
+	fn sub(self, rhs: Self) -> Self::Output {
 		let (frac1, frac2) = equalise_denominators(self, rhs);
 		let top = frac1.top - frac2.top;
 		Self::new(top, frac1.bottom)
-    }
+	}
 }
 
 impl std::ops::Mul for Fraction {
@@ -85,18 +95,21 @@ impl std::ops::Div for Fraction {
 }
 
 impl std::ops::DivAssign for Fraction {
-    fn div_assign(&mut self, rhs: Self) {
+	fn div_assign(&mut self, rhs: Self) {
 		self.top = self.top * rhs.bottom;
 		self.bottom = self.bottom * rhs.top;
 		self.simplify_mut();
-    }
+	}
 }
 
-impl<T> std::ops::DivAssign<T> for Fraction where u128: std::ops::MulAssign<T> {
-    fn div_assign(&mut self, rhs: T) {
+impl<T> std::ops::DivAssign<T> for Fraction
+where
+	u128: std::ops::MulAssign<T>,
+{
+	fn div_assign(&mut self, rhs: T) {
 		self.bottom *= rhs;
 		self.simplify_mut();
-    }
+	}
 }
 
 impl std::ops::Mul<u128> for Fraction {
@@ -186,4 +199,32 @@ fn add_simplify() {
 	let frac1 = Fraction::new(4, 3);
 	let frac2 = Fraction::new(2, 3);
 	assert_eq!(frac1 + frac2, Fraction::new(2, 1))
+}
+
+#[test]
+fn add_assign_one_denominator_change() {
+	let mut fraction = Fraction::new(3, 4);
+	fraction += Fraction::new(5, 8);
+	assert_eq!(fraction, Fraction::new(11, 8))
+}
+
+#[test]
+fn add_assign_denominators_multiply() {
+	let mut fraction = Fraction::new(3, 4);
+	fraction += Fraction::new(4, 5);
+	assert_eq!(fraction, Fraction::new(31, 20))
+}
+
+#[test]
+fn add_assign_lcm() {
+	let mut fraction = Fraction::new(5, 6);
+	fraction += Fraction::new(3, 4);
+	assert_eq!(fraction, Fraction::new(19, 12))
+}
+
+#[test]
+fn add_assign_simplify() {
+	let mut fraction = Fraction::new(4, 3);
+	fraction += Fraction::new(2, 3);
+	assert_eq!(fraction, Fraction::new(2, 1))
 }
