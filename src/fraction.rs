@@ -1,4 +1,4 @@
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub struct Fraction {
 	top: u128,
 	bottom: u128,
@@ -46,9 +46,11 @@ impl std::ops::Add for Fraction {
 	type Output = Self;
 
 	fn add(self, rhs: Self) -> Self::Output {
-		let (frac1, frac2) = equalise_denominators(self, rhs);
-		let top = frac1.top + frac2.top;
-		Self::new(top, frac1.bottom)
+		let lcm = lcm(self.bottom, rhs.bottom);
+		let first_top = self.top * (lcm / self.bottom);
+		let second_top = rhs.top * (lcm / rhs.bottom);
+		let top= first_top + second_top;
+		Self::new(top, lcm)
 	}
 }
 
@@ -156,4 +158,32 @@ fn equalise_denominators(frac1: Fraction, frac2: Fraction) -> (Fraction, Fractio
 		bottom: frac2.bottom * lcm,
 	};
 	(out1, out2)
+}
+
+#[test]
+fn add_one_denominator_change() {
+	let frac1 = Fraction::new(3, 4);
+	let frac2 = Fraction::new(5, 8);
+	assert_eq!(frac1 + frac2, Fraction::new(11, 8))
+}
+
+#[test]
+fn add_denominators_multiply() {
+	let frac1 = Fraction::new(3, 4);
+	let frac2 = Fraction::new(4, 5);
+	assert_eq!(frac1 + frac2, Fraction::new(31, 20))
+}
+
+#[test]
+fn add_lcm() {
+	let frac1 = Fraction::new(5, 6);
+	let frac2 = Fraction::new(3, 4);
+	assert_eq!(frac1 + frac2, Fraction::new(19, 12))
+}
+
+#[test]
+fn add_simplify() {
+	let frac1 = Fraction::new(4, 3);
+	let frac2 = Fraction::new(2, 3);
+	assert_eq!(frac1 + frac2, Fraction::new(2, 1))
 }
