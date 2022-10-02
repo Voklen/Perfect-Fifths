@@ -68,9 +68,11 @@ impl std::ops::Sub for Fraction {
 	type Output = Self;
 
 	fn sub(self, rhs: Self) -> Self::Output {
-		let (frac1, frac2) = equalise_denominators(self, rhs);
-		let top = frac1.top - frac2.top;
-		Self::new(top, frac1.bottom)
+		let lcm = lcm(self.bottom, rhs.bottom);
+		let first_top = self.top * (lcm / self.bottom);
+		let second_top = rhs.top * (lcm / rhs.bottom);
+		let top = first_top - second_top;
+		Self::new(top, lcm)
 	}
 }
 
@@ -160,19 +162,6 @@ const fn lcm(n1: u128, n2: u128) -> u128 {
 	(n1 * n2) / gcd(n1, n2)
 }
 
-fn equalise_denominators(frac1: Fraction, frac2: Fraction) -> (Fraction, Fraction) {
-	let lcm = lcm(frac1.bottom, frac2.bottom);
-	let out1 = Fraction {
-		top: frac1.top * lcm,
-		bottom: frac1.bottom * lcm,
-	};
-	let out2 = Fraction {
-		top: frac2.top * lcm,
-		bottom: frac2.bottom * lcm,
-	};
-	(out1, out2)
-}
-
 #[test]
 fn add_one_denominator_change() {
 	let frac1 = Fraction::new(3, 4);
@@ -227,4 +216,32 @@ fn add_assign_simplify() {
 	let mut fraction = Fraction::new(4, 3);
 	fraction += Fraction::new(2, 3);
 	assert_eq!(fraction, Fraction::new(2, 1))
+}
+
+#[test]
+fn sub_one_denominator_change() {
+	let frac1 = Fraction::new(3, 4);
+	let frac2 = Fraction::new(5, 8);
+	assert_eq!(frac1 - frac2, Fraction::new(1, 8))
+}
+
+#[test]
+fn sub_denominators_multiply() {
+	let frac1 = Fraction::new(4, 5);
+	let frac2 = Fraction::new(3, 4);
+	assert_eq!(frac1 - frac2, Fraction::new(1, 20))
+}
+
+#[test]
+fn sub_lcm() {
+	let frac1 = Fraction::new(5, 6);
+	let frac2 = Fraction::new(3, 4);
+	assert_eq!(frac1 - frac2, Fraction::new(1, 12))
+}
+
+#[test]
+fn sub_simplify() {
+	let frac1 = Fraction::new(4, 3);
+	let frac2 = Fraction::new(1, 3);
+	assert_eq!(frac1 - frac2, Fraction::new(1, 1))
 }
