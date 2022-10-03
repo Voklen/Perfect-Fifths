@@ -76,6 +76,16 @@ impl std::ops::Sub for Fraction {
 	}
 }
 
+impl std::ops::SubAssign for Fraction {
+	fn sub_assign(&mut self, rhs: Self) {
+		let lcm = lcm(self.bottom, rhs.bottom);
+		self.top *= lcm / self.bottom;
+		self.top -= rhs.top * (lcm / rhs.bottom);
+		self.bottom = lcm;
+		self.simplify_mut();
+	}
+}
+
 impl std::ops::Mul for Fraction {
 	type Output = Self;
 
@@ -244,4 +254,32 @@ fn sub_simplify() {
 	let frac1 = Fraction::new(4, 3);
 	let frac2 = Fraction::new(1, 3);
 	assert_eq!(frac1 - frac2, Fraction::new(1, 1))
+}
+
+#[test]
+fn sub_assign_one_denominator_change() {
+	let mut fraction = Fraction::new(3, 4);
+	fraction -= Fraction::new(5, 8);
+	assert_eq!(fraction, Fraction::new(1, 8))
+}
+
+#[test]
+fn sub_assign_denominators_multiply() {
+	let mut fraction = Fraction::new(4, 5);
+	fraction -= Fraction::new(3, 4);
+	assert_eq!(fraction, Fraction::new(1, 20))
+}
+
+#[test]
+fn sub_assign_lcm() {
+	let mut fraction = Fraction::new(5, 6);
+	fraction -= Fraction::new(3, 4);
+	assert_eq!(fraction, Fraction::new(1, 12))
+}
+
+#[test]
+fn sub_assign_simplify() {
+	let mut fraction = Fraction::new(4, 3);
+	fraction -= Fraction::new(1, 3);
+	assert_eq!(fraction, Fraction::new(1, 1))
 }
