@@ -283,3 +283,17 @@ fn sub_assign_simplify() {
 	fraction -= Fraction::new(1, 3);
 	assert_eq!(fraction, Fraction::new(1, 1))
 }
+
+#[test]
+fn mul() {
+	let frac1 = Fraction::new(3, 4);
+	let frac2 = Fraction::new(5, 8);
+	assert_eq!(frac1 * frac2, Fraction::new(15, 32))
+}
+
+#[test]
+fn mul_simplify() {
+	let frac1 = Fraction::new(4, 3);
+	let frac2 = Fraction::new(1, 6);
+	assert_eq!(frac1 * frac2, Fraction::new(2, 9))
+}
