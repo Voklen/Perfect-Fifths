@@ -96,6 +96,13 @@ impl std::ops::Mul for Fraction {
 	}
 }
 
+impl std::ops::MulAssign for Fraction {
+    fn mul_assign(&mut self, rhs: Self) {
+		self.top *= rhs.top;
+		self.bottom *= rhs.bottom;
+		self.simplify_mut();
+    }
+}
 impl std::ops::Div for Fraction {
 	type Output = Self;
 
@@ -296,4 +303,18 @@ fn mul_simplify() {
 	let frac1 = Fraction::new(4, 3);
 	let frac2 = Fraction::new(1, 6);
 	assert_eq!(frac1 * frac2, Fraction::new(2, 9))
+}
+
+#[test]
+fn mul_assign() {
+	let mut fraction = Fraction::new(3, 4);
+	fraction *= Fraction::new(5, 8);
+	assert_eq!(fraction, Fraction::new(15, 32))
+}
+
+#[test]
+fn mul_assign_simplify() {
+	let mut fraction = Fraction::new(4, 3);
+	fraction *= Fraction::new(1, 6);
+	assert_eq!(fraction, Fraction::new(2, 9))
 }
